@@ -31,8 +31,9 @@
         await model.detect(video).then(predictions => {
           predictions.forEach(prediction => {
             if (prediction.class === 'barcode') {
-              console.log('Barcode detected:', prediction);
+              //console.log('Barcode detected:', prediction);
               // เพิ่มโค้ดสำหรับแสดงผลลัพธ์ที่ต้องการ เช่น เพิ่มแถวใหม่
+              alert(prediction);
             }
           });
           requestAnimationFrame(() => {
