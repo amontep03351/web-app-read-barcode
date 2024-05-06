@@ -3,39 +3,37 @@
 <head>
     <title>Barcode Scanner</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
+    <script src="https://cdn.rawgit.com/zxing-js/library/master@2.0.0/build/zxing.min.js"></script>
 </head>
 <body>
     <h1>Barcode Scanner</h1>
+    <input type="file" accept="image/*" capture="camera" id="file-input">
     <div id="barcode-result"></div>
     <script>
         $(document).ready(function() {
-            Quagga.init({
-                inputStream : {
-                    name : "Live",
-                    type : "LiveStream",
-                    target: document.querySelector('#barcode-result'),
-                    constraints: {
-                        width: 480,
-                        height: 320,
-                        facingMode: "environment"
-                    },
-                },
-                decoder: {
-                    readers : ["ean_reader"]
-                }
-            }, function(err) {
-                if (err) {
-                    console.log(err);
-                    return
-                }
-                console.log("Initialization finished. Ready to start");
-                Quagga.start();
-            });
-
-            Quagga.onDetected(function(data) {
-                console.log("Barcode detected and processed : [" + data.codeResult.code + "]", data);
-                $("#barcode-result").html("Detected barcode: " + data.codeResult.code);
+            $('#file-input').on('change', function(e) {
+                var file = e.target.files[0];
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var imageData = e.target.result;
+                    Quagga.decodeSingle({
+                        src: imageData,
+                        numOfWorkers: 0,
+                        inputStream: {
+                            size: 800
+                        },
+                        decoder: {
+                            readers: ['ean_reader']
+                        },
+                    }, function(result) {
+                        if (result && result.codeResult) {
+                            $("#barcode-result").html("Detected barcode: " + result.codeResult.code);
+                        } else {
+                            $("#barcode-result").html("No barcode detected");
+                        }
+                    });
+                };
+                reader.readAsDataURL(file);
             });
         });
     </script>
