@@ -1,41 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Barcode Scanner</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.rawgit.com/zxing-js/library/master@2.0.0/build/zxing.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-time Barcode Scanner</title>
 </head>
 <body>
-    <h1>Barcode Scanner</h1>
-    <input type="file" accept="image/*" capture="camera" id="file-input">
-    <div id="barcode-result"></div>
-    <script>
-        $(document).ready(function() {
-            $('#file-input').on('change', function(e) {
-                var file = e.target.files[0];
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    var imageData = e.target.result;
-                    Quagga.decodeSingle({
-                        src: imageData,
-                        numOfWorkers: 0,
-                        inputStream: {
-                            size: 800
-                        },
-                        decoder: {
-                            readers: ['ean_reader']
-                        },
-                    }, function(result) {
-                        if (result && result.codeResult) {
-                            $("#barcode-result").html("Detected barcode: " + result.codeResult.code);
-                        } else {
-                            $("#barcode-result").html("No barcode detected");
-                        }
-                    });
-                };
-                reader.readAsDataURL(file);
-            });
-        });
-    </script>
+  <h1>Real-time Barcode Scanner</h1>
+  <div id="barcode-scanner"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
+  <script>
+    Quagga.init({
+      inputStream: {
+        name: "Live",
+        type: "LiveStream",
+        target: document.querySelector('#barcode-scanner'),
+        constraints: {
+          width: 800,
+          height: 600,
+          facingMode: "environment" // ใช้กล้องด้านหลัง (ถ้ามี)
+        },
+      },
+      decoder: {
+        readers: ["ean_reader"] // กำหนดให้อ่าน barcode รูปแบบ EAN
+      }
+    }, function(err) {
+      if (err) {
+        console.log(err);
+        return
+      }
+      console.log("Initialization finished. Ready to start");
+      Quagga.start();
+    });
+
+    Quagga.onDetected(function(result) {
+      var code = result.codeResult.code;
+      console.log("Barcode detected and processed : [" + code + "]");
+      // เพิ่มโค้ดสำหรับแสดงผลลัพธ์ที่ต้องการ เช่น เพิ่มแถวใหม่
+    });
+  </script>
 </body>
 </html>
