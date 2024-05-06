@@ -3,42 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Real-time Barcode Scanner</title>
+  <title>Real-time Barcode Detection with AI</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
 </head>
 <body>
-  <h1>Real-time Barcode Scanner</h1>
-  <div id="barcode-scanner"></div>
+  <h1>Real-time Barcode Detection with AI</h1>
+  <video id="barcode-video" width="800" height="600" autoplay></video>
+  <canvas id="barcode-canvas" width="800" height="600"></canvas>
 
-  <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
   <script>
-    Quagga.init({
-      inputStream: {
-        name: "Live",
-        type: "LiveStream",
-        target: document.querySelector('#barcode-scanner'),
-        constraints: {
-          width: 800,
-          height: 600,
-          facingMode: "environment" // ใช้กล้องด้านหลัง (ถ้ามี)
-        },
-      },
-      decoder: {
-        readers: ["ean_reader"] // กำหนดให้อ่าน barcode รูปแบบ EAN
-      }
-    }, function(err) {
-      if (err) {
-        console.log(err);
-        return
-      }
-      console.log("Initialization finished. Ready to start");
-      Quagga.start();
-    });
+    async function detectBarcode() {
+      const video = document.getElementById('barcode-video');
+      const canvas = document.getElementById('barcode-canvas');
+      const context = canvas.getContext('2d');
 
-    Quagga.onDetected(function(result) {
-      var code = result.codeResult.code;
-      console.log("Barcode detected and processed : [" + code + "]");
-      // เพิ่มโค้ดสำหรับแสดงผลลัพธ์ที่ต้องการ เช่น เพิ่มแถวใหม่
-    });
+      // Load the COCO-SSD model
+      const model = await cocoSsd.load();
+
+      // Get webcam stream and set it as the source of the video element
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then((stream) => {
+          video.srcObject = stream;
+        });
+
+      video.addEventListener('loadeddata', async () => {
+        await model.detect(video).then(predictions => {
+          predictions.forEach(prediction => {
+            if (prediction.class === 'barcode') {
+              console.log('Barcode detected:', prediction);
+              // เพิ่มโค้ดสำหรับแสดงผลลัพธ์ที่ต้องการ เช่น เพิ่มแถวใหม่
+            }
+          });
+          requestAnimationFrame(() => {
+            detectBarcode();
+          });
+        });
+      });
+    }
+
+    detectBarcode();
   </script>
 </body>
 </html>
