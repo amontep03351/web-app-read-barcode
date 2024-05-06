@@ -35,6 +35,7 @@
 
             Quagga.onDetected(function(data) {
                 console.log("Barcode detected and processed : [" + data.codeResult.code + "]", data);
+                $("#barcode-result").html("Detected barcode: " + data.codeResult.code);
             });
         });
     </script>
